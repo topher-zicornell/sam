@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Xephyrus Sam: State Machine Engine</title>
+
+    <link type="text/css" href="lib/css/vader/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+    <link type="text/css" href="lib/css/jquery.layout.css" rel="stylesheet" />
+    <link type="text/css" href="main.css" rel="stylesheet" />
+
+    <script type="text/javascript" src="lib/jquery-1.6.4.js"></script>
+    <script type="text/javascript" src="lib/jquery-ui-1.8.16.vader.js"></script>
+    <script type="text/javascript" src="lib/jquery.layout.js"></script>
+
+    <script type="text/javascript">
+      $(document).ready(
+        function ()
+        {
+          $('body').layout(
+            {
+              north:
+              {
+                paneSelector: '#main-north',
+                resizable: false,
+                closable: false
+              },
+              center:
+              {
+                paneSelector: '#main-center'
+              },
+              west:
+              {
+                paneSelector: '#main-west'
+              }
+            }
+          );
+
+          loadContent('intro.html');
+        }
+      );
+
+      function loadContent (url)
+      {
+        $('#main-center').load(url);
+      }
+    </script>
+  </head>
+
+  <body>
+    <div id="main-north">
+      <div class="title">Xephyrus Sam</div>
+    </div>
+    <div id="main-center">
+    </div>
+    <div id="main-west">
+      <div class="title">Site Menu</div>
+      <div class="menu">
+        <div class="head">Home</div>
+        <div class="list">
+          <ul>
+            <li><a href="#" onclick="loadContent('intro.html')">Introduction</a></li>
+            <li><a href="#" onclick="loadContent('license.html')">Licensing</a></li>
+            <li><a href="#" onclick="loadContent('support.html')">Support</a></li>
+          </ul>
+        </div>
+
+        <div class="head">Documentation</div>
+        <div class="list">
+          <ul>
+            <li><a href="#" onclick="loadContent('http://www.xephyrus.com/pod/2011/09/sam-a-state-machine-engine.html #alpha')">Getting Started: Basic Walkthrough</a></li>
+            <li>API Docs (JavaDocs)</li>
+            <li><a href="#" onclick="loadContent('http://www.xephyrus.com/pod/2011/09/sam-penneys-game.html #alpha')">Article: Penney's Game</a></li>
+            <li>Article: Watchdog</li>
+            <li>Article: State Machine Design Patterns</li>
+          </ul>
+        </div>
+
+        <div class="head">Releases</div>
+        <div class="list">
+          <ul>
+            <li><a href="#" onclick="loadContent('roadmap.html')">Releases and Roadmap</a></li>
+            <li><a href="#" onclick="loadContent('download.html')">Downloads</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

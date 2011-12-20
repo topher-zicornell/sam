@@ -1,0 +1,69 @@
+
+body
+{
+  font-family: Verdana, Helvetica, Arial, sans-serif;
+  font-size: 10pt;
+  background: #DDDDDD;
+}
+
+#main-north .title
+{
+  font-family: Courier New, monospace;
+  font-size: 24pt;
+  font-weight: bold;
+  text-align: center;
+}
+
+#main-center .title
+{
+  font-weight: bold;
+  font-size: 18pt;
+}
+
+#main-center a
+{
+  color: #2222CC;
+  text-decoration: none;
+  border-bottom: 1px dotted #2222CC;
+}
+
+#main-center a:hover
+{
+  color: #000088;
+  text-decoration: none;
+  border-bottom: 1px solid #000088;
+}
+
+#main-west .title
+{
+  font-weight: bold;
+  font-size: 14pt;
+}
+
+#main-west a
+{
+  color: #2222CC;
+  text-decoration: none;
+}
+
+#main-center a:hover
+{
+  color: #000088;
+  text-decoration: none;
+}
+
+.ui-layout-pane
+{
+  -moz-border-radius: 8px;
+}
+
+.ui-layout-resizer-north
+{
+  background: #DDDDDD;
+}
+
+.ui-layout-pane-north
+{
+  border: 0;
+  background: #DDDDDD;
+}
