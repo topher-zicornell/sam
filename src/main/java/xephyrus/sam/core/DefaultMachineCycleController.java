@@ -23,7 +23,7 @@ public class DefaultMachineCycleController<S extends Enum, P extends Payload>
   @Override
   public long getYieldTime ()
   {
-    return _yieldTime;
+    return (_yieldTime != null ? _yieldTime : 100L);
   }
 
   public void setYieldTime (Long yieldTime)
