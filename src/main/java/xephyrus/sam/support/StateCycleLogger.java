@@ -25,7 +25,7 @@ public class StateCycleLogger<S extends Enum,P extends Payload>
   }
 
   @Override
-  public void errorStateWork (S state, P payload, Exception error)
+  public void errorStateWork (S state, P payload, Throwable error)
   {
     getLog(state,payload).log(getErrorLevel(),"Payload " + payload.getId() + " failed in state " +
         state,error);

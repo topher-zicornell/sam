@@ -60,7 +60,7 @@ public class PenneysGame
   }
 
   @Override
-  public void notifyComplete (PenneysPayload payload, PenneysState lastState, Exception error)
+  public void notifyComplete (PenneysPayload payload, PenneysState lastState, Throwable error)
   {
     if (error != null)
     {

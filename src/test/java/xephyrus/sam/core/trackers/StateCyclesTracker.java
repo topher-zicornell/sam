@@ -25,7 +25,7 @@ public class StateCyclesTracker<S extends Enum, P extends Payload>
   }
 
   @Override
-  public void errorStateWork (S state, P payload, Exception error)
+  public void errorStateWork (S state, P payload, Throwable error)
   {
     incCount(StateCycles.ERROR);
     _log.error("Received " + error,error);
