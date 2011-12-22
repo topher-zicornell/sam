@@ -28,6 +28,7 @@ import xephyrus.sam.core.annotations.StateMachineState;
 import xephyrus.sam.core.queue.ProcessingQueue;
 import xephyrus.sam.core.queue.ProcessingQueueException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -85,7 +86,7 @@ import java.util.concurrent.TimeUnit;
 public class StateMachine<S extends Enum, P extends Payload>
   extends Thread
 {
-  protected enum MachineCycles
+  public enum MachineCycles
   {
     AFTER,
     BEFORE,
@@ -96,14 +97,14 @@ public class StateMachine<S extends Enum, P extends Payload>
     YIELD
   }
 
-  protected enum StateCycles
+  public enum StateCycles
   {
     AFTER,
     BEFORE,
     ERROR
   }
 
-  protected class StateWorker
+  public class StateWorker
     extends Thread
   {
     public StateWorker (ProcessInfo<S, P> info)
@@ -122,7 +123,7 @@ public class StateMachine<S extends Enum, P extends Payload>
         if (method != null)
         {
           triggerStateCycle(StateCycles.BEFORE, _info.getState(), _info.getPayload());
-          afterState = (S) method.invoke(this, _info.getPayload());
+          afterState = (S) method.invoke(_machine, _info.getPayload());
           if (afterState != null)
           {
             _processingQueue.push(new ProcessInfo<S,P>(_info.getPayload(),afterState));
@@ -134,11 +135,20 @@ public class StateMachine<S extends Enum, P extends Payload>
           triggerNotifyComplete(_info.getPayload(), _info.getState(),null);
         }
       }
-      catch (Exception cant)
+      catch (Throwable cant)
       {
-        triggerStateCycle(StateCycles.ERROR, _info.getState(), _info.getPayload(), cant);
-        triggerNotifyComplete(_info.getPayload(), _info.getState(),cant);
+        triggerStateCycle(StateCycles.ERROR, _info.getState(), _info.getPayload(),
+            (cant instanceof InvocationTargetException ?
+                ((InvocationTargetException) cant).getTargetException() : cant));
+        triggerNotifyComplete(_info.getPayload(), _info.getState(),
+            (cant instanceof InvocationTargetException ?
+                ((InvocationTargetException) cant).getTargetException() : cant));
       }
+    }
+
+    public ProcessInfo<S, P> getInfo ()
+    {
+      return _info;
     }
 
     private ProcessInfo<S,P> _info;
@@ -393,6 +403,7 @@ public class StateMachine<S extends Enum, P extends Payload>
             catch (RejectedExecutionException cant)
             {
               triggerMachineCycle(MachineCycles.FULL);
+              _processingQueue.push(info);
             }
           }
           triggerMachineCycle(MachineCycles.AFTER);
@@ -461,6 +472,10 @@ public class StateMachine<S extends Enum, P extends Payload>
           listener.stoppingMachine();
           break;
 
+        case FULL:
+          listener.fullMachine();
+          break;
+
         case YIELD:
           listener.yieldCycle();
           break;
@@ -497,7 +512,7 @@ public class StateMachine<S extends Enum, P extends Payload>
    *     The exception that caused processing of this payload to end, if any.
    */
   @SuppressWarnings({"unchecked"})
-  protected final void triggerNotifyComplete (P payload, S lastState, Exception error)
+  protected final void triggerNotifyComplete (P payload, S lastState, Throwable error)
   {
     for (CompletionListener listener: _completionListeners)
     {
@@ -522,7 +537,7 @@ public class StateMachine<S extends Enum, P extends Payload>
     }
   }
 
-  protected final void triggerStateCycle (StateCycles cycle, S state, P payload, Exception error)
+  protected final void triggerStateCycle (StateCycles cycle, S state, P payload, Throwable error)
   {
     if (cycle == StateCycles.ERROR)
     {
