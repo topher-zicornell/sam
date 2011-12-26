@@ -86,6 +86,9 @@ import java.util.concurrent.TimeUnit;
 public class StateMachine<S extends Enum, P extends Payload>
   extends Thread
 {
+  /**
+   * A strongly-typed list of the possible triggers from within the StateMachine processing cycle.
+   */
   public enum MachineCycles
   {
     AFTER,
@@ -97,6 +100,9 @@ public class StateMachine<S extends Enum, P extends Payload>
     YIELD
   }
 
+  /**
+   * A strongly-typed list of the possible triggers from within the state worker executor.
+   */
   public enum StateCycles
   {
     AFTER,
@@ -104,14 +110,28 @@ public class StateMachine<S extends Enum, P extends Payload>
     ERROR
   }
 
+  /**
+   * The executor for the state workers.  This thread handles execution of a single state worker
+   * execution on a single payload.
+   */
   public class StateWorker
     extends Thread
   {
+    /**
+     * Creates a new one of these for the given {@link ProcessInfo} object, which contains the
+     * state and payload.
+     *
+     * @param info
+     *   The worker set.
+     */
     public StateWorker (ProcessInfo<S, P> info)
     {
       _info = info;
     }
 
+    /**
+     * The state worker executor process.
+     */
     @SuppressWarnings({"unchecked"})
     @Override
     public void run ()
@@ -146,6 +166,12 @@ public class StateMachine<S extends Enum, P extends Payload>
       }
     }
 
+    /**
+     * Provides the wrapped state and payload info.
+     *
+     * @return
+     *   The worker set.
+     */
     public ProcessInfo<S, P> getInfo ()
     {
       return _info;
@@ -159,9 +185,9 @@ public class StateMachine<S extends Enum, P extends Payload>
    * the payload class.
    *
    * @param stateType
-   *     The state enum.
+   *   The state enum.
    * @param payloadType
-   *     The payload class.
+   *   The payload class.
    */
   public StateMachine (Class<S> stateType, Class<P> payloadType)
   {
@@ -172,6 +198,17 @@ public class StateMachine<S extends Enum, P extends Payload>
     registerAnnotatedStates();
   }
 
+  /**
+   * Initializes things for this state machine with the class definitions for the state enum and
+   * payload class, and using the specified machine object as the source for the worker methods.
+   *
+   * @param stateType
+   *   The state enum.
+   * @param payloadType
+   *   The payload type.
+   * @param machine
+   *   The machine worker method source.
+   */
   public StateMachine (Class<S> stateType, Class<P> payloadType, Object machine)
   {
     _stateType = stateType;
@@ -194,16 +231,35 @@ public class StateMachine<S extends Enum, P extends Payload>
     _completionListeners.add(listener);
   }
 
+  /**
+   * Registers a listener to be informed at various stages throughout the StateMachine processing
+   * cycle.
+   *
+   * @param machineCycleListener
+   *   The listener to be registered.
+   */
   public void addMachineCycleListener (MachineCycleListener machineCycleListener)
   {
     _machineCycleListeners.add(machineCycleListener);
   }
 
+  /**
+   * Registers a listener to be informed around when state processing is executed.
+   *
+   * @param stateCycleListener
+   *   The listener to be registered.
+   */
   public void addStateCycleListener (StateCycleListener<S,P> stateCycleListener)
   {
     _stateCycleListeners.add(stateCycleListener);
   }
 
+  /**
+   * Provides the machine cycle controller for this state machine.
+   *
+   * @return
+   *   The machine cycle controller.
+   */
   public MachineCycleController getMachineCycleController ()
   {
     _cycleController = (_cycleController == null ?
@@ -212,6 +268,13 @@ public class StateMachine<S extends Enum, P extends Payload>
     return _cycleController;
   }
 
+  /**
+   * Sets the machine cycle controller to be used in governing the processing cycle of this state
+   * machine.
+   *
+   * @param cycleController
+   *   The machine cycle controller.
+   */
   public void setMachineCycleController (MachineCycleController cycleController)
   {
     _cycleController = cycleController;
@@ -220,14 +283,10 @@ public class StateMachine<S extends Enum, P extends Payload>
   /**
    * Provides direct access to the process queue.
    *
-   * BE CAREFUL.  I'm not sure I should even be providing this.  I can't think of any good reason
-   * for you to access the process queue directly, but I only have the one brain.  Any jokes that
-   * pop into your head from that comment should be disregarded.
-   *
    * @return
-   *     The process queue, raw and dangerous.
+   *   The process queue, raw and dangerous.
    */
-  public final ProcessingQueue<S, P> getProcessingQueue ()
+  public ProcessingQueue<S, P> getProcessingQueue ()
   {
     return _processingQueue;
   }
@@ -273,11 +332,23 @@ public class StateMachine<S extends Enum, P extends Payload>
     _startState = state;
   }
 
+  /**
+   * Provides the current thread pool for the state worker threads.
+   *
+   * @return
+   *   The state worker's thread pool.
+   */
   public ExecutorService getThreadPool ()
   {
     return _threadPool;
   }
 
+  /**
+   * Sets the thread pool for the state worker threads.
+   *
+   * @param threadPool
+   *   The state worker's thread pool.
+   */
   public void setThreadPool (ExecutorService threadPool)
   {
     _threadPool = threadPool;
@@ -450,6 +521,12 @@ public class StateMachine<S extends Enum, P extends Payload>
     }
   }
 
+  /**
+   * Triggers a notification to each of the registered machine cycle listeners.
+   *
+   * @param cycle
+   *   Identifies the notification to be triggered.
+   */
   protected final void triggerMachineCycle (MachineCycles cycle)
   {
     for (MachineCycleListener listener: _machineCycleListeners)
@@ -483,6 +560,18 @@ public class StateMachine<S extends Enum, P extends Payload>
     }
   }
 
+  /**
+   * Triggers a notification to each of the registered machine cycle listeners.  This is really
+   * only useful for the {@link MachineCycleListener#failingMachine(Throwable)} notification,
+   * however it will gracefully defer to
+   * {@link #triggerMachineCycle(xephyrus.sam.core.StateMachine.MachineCycles)} if it's called for
+   * any other notifications.
+   *
+   * @param cycle
+   *   The notification to be triggered.  (Should be {@link MachineCycles#FAILING}.)
+   * @param fail
+   *   The exception to send with the notification.
+   */
   protected final void triggerMachineCycle (MachineCycles cycle, Throwable fail)
   {
     if (cycle == MachineCycles.FAILING)
@@ -520,6 +609,16 @@ public class StateMachine<S extends Enum, P extends Payload>
     }
   }
 
+  /**
+   * Triggers a notification to each of the registered state cycle listeners.
+   *
+   * @param cycle
+   *   The notification to be triggered.
+   * @param state
+   *   The state for this notification.
+   * @param payload
+   *   The payload for this notification.
+   */
   protected final void triggerStateCycle (StateCycles cycle, S state, P payload)
   {
     for (StateCycleListener<S,P> listener: _stateCycleListeners)
@@ -537,6 +636,22 @@ public class StateMachine<S extends Enum, P extends Payload>
     }
   }
 
+  /**
+   * Triggers a notification to each of the registered state cycle listeners.  This is really only
+   * useful for the {@link StateCycleListener#errorStateWork(Enum, Payload, Throwable)}
+   * notification, however it will gracefully defer to
+   * {@link #triggerStateCycle(xephyrus.sam.core.StateMachine.StateCycles, Enum, Payload)} if it's
+   * called for any other notifications.
+   *
+   * @param cycle
+   *   The notification to be triggered.
+   * @param state
+   *   The state for this notification.
+   * @param payload
+   *   The payload for this notification.
+   * @param error
+   *   The exception for this notification.
+   */
   protected final void triggerStateCycle (StateCycles cycle, S state, P payload, Throwable error)
   {
     if (cycle == StateCycles.ERROR)

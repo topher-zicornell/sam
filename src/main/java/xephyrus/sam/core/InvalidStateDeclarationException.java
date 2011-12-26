@@ -1,5 +1,10 @@
 package xephyrus.sam.core;
 
+/**
+ * This is thrown by the {@link StateMachine} during initialization when a
+ * {@link xephyrus.sam.core.annotations.StateMachineState} annotation is defined with a state name
+ * that doesn't exist in the corresponding S Enum for that StateMachine.
+ */
 public class InvalidStateDeclarationException
   extends RuntimeException
 {

@@ -1,5 +1,8 @@
 package xephyrus.sam.core.queue;
 
+/**
+ * Thrown when a problem is encountered within the queueing system.
+ */
 public class ProcessingQueueException
   extends Exception
 {

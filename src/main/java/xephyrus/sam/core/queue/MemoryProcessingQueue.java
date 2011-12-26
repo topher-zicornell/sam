@@ -5,6 +5,13 @@ import xephyrus.sam.core.ProcessInfo;
 
 import java.util.LinkedList;
 
+/**
+ * An implementation of {@link ProcessingQueue} which manages the queue in memory using a
+ * {@link LinkedList}.
+ *
+ * @param <S> The states of this {@link xephyrus.sam.core.StateMachine}.
+ * @param <P> The {@link Payload} of this {@link xephyrus.sam.core.StateMachine}.
+ */
 public class MemoryProcessingQueue<S extends Enum, P extends Payload>
   implements ProcessingQueue<S,P>
 {
